@@ -2,7 +2,6 @@ package ru.mipt.bit.platformer.Input;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.GridPoint2;
-import ru.mipt.bit.platformer.Input.GamePosition;
 import static com.badlogic.gdx.Input.Keys.*;
 
 public class TankProcessor {
