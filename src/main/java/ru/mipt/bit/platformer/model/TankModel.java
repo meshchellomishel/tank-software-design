@@ -8,11 +8,13 @@ import com.badlogic.gdx.math.GridPoint2;
 public class TankModel extends GameObjectModel {
     private float speed;
     private GridPoint2 destinationCoordinates;
+    private float movingProgress;
 
     public TankModel(GridPoint2 initCoordinates, float speed) {
         super(initCoordinates);
         this.speed = speed;
         this.destinationCoordinates = coordinates.cpy();
+        this.movingProgress = 1f;
     }
 
     public void continueProgress(float deltaTime) {
@@ -50,6 +52,18 @@ public class TankModel extends GameObjectModel {
 
     public void commitAction() {
         this.coordinates = destinationCoordinates.cpy();
+        this.movingProgress = 1f;
+    }
+
+    public float getProgress() {
+        return this.movingProgress;
+    }
+
+    public boolean isCompletedMove() {
+        return isEqual(this.movingProgress, 1f);
+    }
+
+    public void resetProgress() {
         this.movingProgress = 1f;
     }
 }

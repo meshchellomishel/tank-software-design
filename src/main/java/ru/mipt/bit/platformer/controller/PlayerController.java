@@ -15,13 +15,13 @@ import ru.mipt.bit.platformer.Input.GamePosition;
 import ru.mipt.bit.platformer.Input.TankProcessor;
 import ru.mipt.bit.platformer.model.GameObjectModel;
 import ru.mipt.bit.platformer.model.TankModel;
-import ru.mipt.bit.platformer.model.TreeModel;
+import ru.mipt.bit.platformer.model.TreeObstacle;
 import ru.mipt.bit.platformer.util.TileMovement;
 
 public class PlayerController {
     private TankModel tankModel;
     private ObjectView tankView;
-    private TreeModel treeModel;
+    private TreeObstacle treeModel;
     private ObjectView treeView;
     private TiledMapTileLayer layer;
     private TileMovement tileMovement;
@@ -38,13 +38,13 @@ public class PlayerController {
     public PlayerController(TiledMapTileLayer layer, Interpolation interpolation) {
         tankView = new ObjectView("images/tank_blue.png");
         treeView = new ObjectView("images/greenTree.png");
-        treeModel = new TreeModel(new GridPoint2(1, 1));
+        treeModel = new TreeObstacle(new GridPoint2(1, 1));
         tankModel = new TankModel(new GridPoint2(1, 3), 0.4f);
         this.layer = layer;
         this.tileMovement = new TileMovement(layer, interpolation);
     }
 
-    private GridPoint2 processUnderScreenCoordinates(GridPoint2 coordinates) {
+    private GridPoint2 rewriteUnderScreenCoordinates(GridPoint2 coordinates) {
         GridPoint2 result = coordinates.cpy();
 
         if (result.x < 0) {
@@ -62,7 +62,7 @@ public class PlayerController {
         return result;
     }
 
-    private void moveObjects() {
+    private void moveRectangles() {
         tileMovement.moveRectangleBetweenTileCenters(
             tankView.getRectangle(),
             tankModel.getCoordinates(),
@@ -85,14 +85,17 @@ public class PlayerController {
         drawTexture(batch, tankView, tankModel);
     }
 
-    private void processNewPosition(GamePosition position) {
+    private void solveCollisions() {
+        if (treeModel.getCoordinates().equals(tankModel.getDestinationCoordinates())) {
+            tankModel.resetAction();
+        }
+    }
+
+    private void moveToNewPosition(GamePosition position) {
         tankModel.moveDestination(
             position.getCoordinates(),
             position.getRotation()
         );
-        if (treeModel.getCoordinates().equals(tankModel.getDestinationCoordinates())) {
-            tankModel.resetAction();
-        }
     }
 
     private Boolean isUnderScreen() {
@@ -110,20 +113,21 @@ public class PlayerController {
     public void processAction(float deltaTime) {
         GamePosition position = TankProcessor.getAction();
         if (position != null) {
-            processNewPosition(position);
+            moveToNewPosition(position);
+            solveCollisions();
         }
         if (isUnderScreen()) {
             tankModel.setDestinationCoordinates(
-                processUnderScreenCoordinates(
+                rewriteUnderScreenCoordinates(
                     tankModel.getDestinationCoordinates()
                 )
             );
             // tankModel.resetProgress();
         }
 
-        moveObjects();
+        moveRectangles();
         tankModel.continueProgress(deltaTime);
-        if (isEqual(tankModel.getProgress(), 1f)) {
+        if (tankModel.isCompletedMove()) {
             tankModel.commitAction();
         }
     }
