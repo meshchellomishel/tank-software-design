@@ -101,10 +101,10 @@ public class PlayerController {
     private Boolean isUnderScreen() {
         GridPoint2 coordinates = tankModel.getDestinationCoordinates();
 
-        if (coordinates.x < 0 || coordinates.x > layer.getWidth()) {
+        if (coordinates.x < 0 || coordinates.x >= layer.getWidth()) {
             return true;
         }
-        if (coordinates.y < 0 || coordinates.y > layer.getHeight()) {
+        if (coordinates.y < 0 || coordinates.y >= layer.getHeight()) {
             return true;
         }
         return false;
@@ -117,12 +117,12 @@ public class PlayerController {
             solveCollisions();
         }
         if (isUnderScreen()) {
+            tankModel.resetProgress();
             tankModel.setDestinationCoordinates(
                 rewriteUnderScreenCoordinates(
                     tankModel.getDestinationCoordinates()
                 )
             );
-            // tankModel.resetProgress();
         }
 
         moveRectangles();
