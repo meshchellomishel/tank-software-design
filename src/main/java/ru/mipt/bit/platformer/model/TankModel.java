@@ -4,54 +4,52 @@ import static com.badlogic.gdx.math.MathUtils.clamp;
 import static com.badlogic.gdx.math.MathUtils.isEqual;
 
 import com.badlogic.gdx.math.GridPoint2;
-import ru.mipt.bit.platformer.GameActions;
 
 public class TankModel extends GameObjectModel {
-    public TankModel(GridPoint2 initCoordinates, String spritePath) {
-        super(initCoordinates, spritePath);
+    private float speed;
+    private GridPoint2 destinationCoordinates;
+
+    public TankModel(GridPoint2 initCoordinates, float speed) {
+        super(initCoordinates);
+        this.speed = speed;
+        this.destinationCoordinates = coordinates.cpy();
     }
 
-    public void continueProgress(float deltaTime, float speed) {
+    public void continueProgress(float deltaTime) {
         this.movingProgress = clamp(this.movingProgress + deltaTime / speed, 0f, 1f);
     }
 
-    public void calculateDestination(GameActions action) {
-        GridPoint2 moveGap;
-        
-        if (!isEqual(this.movingProgress, 1f)) {
+    public void setDestinationCoordinates(GridPoint2 coordinates) {       
+        if (!isEqual(this.movingProgress, 1f) || this.coordinates.equals(coordinates)) {
             return;
         }
-        switch (action) {
-            case MOVE_UP:
-                moveGap = new GridPoint2(0, 1);
-                this.rotation = 90f;
-                break;
-            case MOVE_DOWN:
-                moveGap = new GridPoint2(0, -1);
-                this.rotation = -90f;
-                break;
-            case MOVE_LEFT:
-                moveGap = new GridPoint2(-1, 0);
-                this.rotation = 180f;
-                break;
-            case MOVE_RIGHT:
-                moveGap = new GridPoint2(1, 0);
-                this.rotation = 0f;
-                break;
-            default:
-                return;
-        }
-        this.destinationCoordinates = moveGap.add(this.coordinates);
+
+        this.destinationCoordinates = coordinates.cpy();
         this.movingProgress = 0f;
     }
 
-    public void resetDestination() {
+    public void moveDestination(GridPoint2 coordinates, float rotation) {       
+        if (!isEqual(this.movingProgress, 1f)) {
+            return;
+        }
+
+        this.destinationCoordinates = coordinates.cpy();
+        this.destinationCoordinates.add(this.coordinates);
+        this.rotation = rotation;
+        this.movingProgress = 0f;
+    }
+
+    public void resetAction() {
         this.destinationCoordinates = this.coordinates.cpy();
         this.movingProgress = 1f;
     }
 
-    public void processAction() {
-        this.movingProgress = 1f;
+    public GridPoint2 getDestinationCoordinates() {
+        return this.destinationCoordinates.cpy();
+    }
+
+    public void commitAction() {
         this.coordinates = destinationCoordinates.cpy();
+        this.movingProgress = 1f;
     }
 }
